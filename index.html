@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+<title>Neon Echo</title>
+<link rel="icon" href="./favicon.ico" />
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="scanlines"></div>
+  <canvas id="particles"></canvas>
+
+  <!-- MAIN MENU -->
+  <section id="menu" class="screen active">
+    <h1 class="logo" data-text="NEON ECHO">NEON ECHO</h1>
+    <p class="tagline">A rhythm &middot; memory arcade</p>
+
+    <div class="panel">
+      <div class="row">
+        <label>Difficulty</label>
+        <div class="seg" id="difficulty">
+          <button data-val="easy" class="active">Easy</button>
+          <button data-val="medium">Medium</button>
+          <button data-val="hard">Hard</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>Pads</label>
+        <div class="seg" id="layout">
+          <button data-val="2x2" class="active">2 &times; 2</button>
+          <button data-val="2x3">2 &times; 3</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>Sound</label>
+        <div class="seg" id="sound">
+          <button data-val="on" class="active">On</button>
+          <button data-val="off">Off</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>Reduced Motion</label>
+        <div class="seg" id="motion">
+          <button data-val="off" class="active">Off</button>
+          <button data-val="on">On</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>Colorblind</label>
+        <div class="seg" id="cb">
+          <button data-val="off" class="active">Off</button>
+          <button data-val="on">On</button>
+        </div>
+      </div>
+      <div class="row hs">
+        <label>High Score</label>
+        <span id="hiScore">0</span>
+      </div>
+    </div>
+
+    <button class="cta" id="startBtn">START</button>
+
+    <div class="hint">
+      <p>Watch the sequence. Repeat it. Survive the glitches.</p>
+      <p class="keys">Keys: <b>1 2 3 4 5 6</b> &middot; <b>Space</b> pause &middot; <b>Esc</b> menu</p>
+    </div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="screen">
+    <header class="hud">
+      <div class="hud-cell"><span class="k">Round</span><span id="round">1</span></div>
+      <div class="hud-cell"><span class="k">Score</span><span id="score">0</span></div>
+      <div class="hud-cell"><span class="k">Combo</span><span id="combo">x1</span></div>
+      <div class="hud-cell streak"><div id="streakBar"></div></div>
+      <button id="pauseBtn" class="ghost">II</button>
+    </header>
+
+    <div id="board" class="board cols-2"></div>
+
+    <div id="status" class="status">Get ready…</div>
+    <div id="floats" class="floats"></div>
+
+    <div id="countdown" class="countdown hidden"><span>3</span></div>
+  </section>
+
+  <!-- PAUSE -->
+  <section id="pause" class="screen overlay">
+    <div class="panel small">
+      <h2>Paused</h2>
+      <button class="cta" id="resumeBtn">Resume</button>
+      <button class="ghost" id="quitBtn">Quit to Menu</button>
+    </div>
+  </section>
+
+  <!-- GAME OVER -->
+  <section id="over" class="screen overlay">
+    <div class="panel small">
+      <h2 class="glitch" data-text="SIGNAL LOST">SIGNAL LOST</h2>
+      <div class="stats">
+        <div><span class="k">Score</span><span id="fScore">0</span></div>
+        <div><span class="k">Rounds</span><span id="fRounds">0</span></div>
+        <div><span class="k">Best Combo</span><span id="fCombo">0</span></div>
+        <div><span class="k">Rank</span><span id="fRank">—</span></div>
+      </div>
+      <button class="cta" id="replayBtn">Replay</button>
+      <button class="ghost" id="menuBtn">Main Menu</button>
+    </div>
+  </section>
+
+  <script src="./game.js"></script>
+</body>
+</html>
