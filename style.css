@@ -16,7 +16,11 @@
   --font:'Orbitron','Segoe UI',system-ui,sans-serif;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+/* Bundled locally (no external requests). Variable font covers weights 400–900. License: fonts/OFL.txt */
+@font-face{
+  font-family:'Orbitron';font-style:normal;font-weight:400 900;font-display:swap;
+  src:url('./fonts/orbitron-latin.woff2') format('woff2');
+}
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--font);user-select:none}
@@ -134,7 +138,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 /* ---------- Board ---------- */
 .board{
   display:grid;gap:14px;
-  width:min(560px,92vmin);aspect-ratio:1/1;
+  /* fit between HUD and status line on short (16:9) screens */
+  width:min(560px,92vw,calc(100vh - 150px));aspect-ratio:1/1;
   padding:14px;border-radius:20px;
   background:rgba(10,5,25,.5);
   border:1px solid rgba(155,92,255,.3);
@@ -142,7 +147,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   transition:transform .6s cubic-bezier(.7,.1,.3,1), filter .3s;
 }
 .board.cols-2{grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr)}
-.board.cols-3{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);aspect-ratio:3/2}
+.board.cols-3{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);aspect-ratio:3/2;width:min(560px,92vw,calc((100vh - 150px)*1.5))}
 
 .pad{
   position:relative;border-radius:14px;cursor:pointer;
@@ -203,6 +208,9 @@ body.cb .pad::after{
 .board.rot90{transform:rotate(90deg)}
 .board.rot180{transform:rotate(180deg)}
 .board.rot270{transform:rotate(270deg)}
+/* a rotated 3:2 board would stand taller than the screen; shrink it to keep the same height */
+.board.cols-3.rot90{transform:rotate(90deg) scale(.667)}
+.board.cols-3.rot270{transform:rotate(270deg) scale(.667)}
 .board.mirror{transform:scaleX(-1)}
 .board.invert{filter:hue-rotate(180deg) saturate(1.4)}
 .board.flash{animation:bFlash .4s 3}
@@ -229,6 +237,41 @@ body.reduced *,body.reduced *::before,body.reduced *::after{animation:none!impor
   .cta{padding:12px 30px;font-size:16px;letter-spacing:.25em}
   .hud-cell span:last-child{font-size:16px}
   .logo{letter-spacing:.1em}
+}
+
+/* Short landscape screens (Poki 640x360 / 836x470, phones held sideways):
+   menu goes two-column, overlays and HUD get compact */
+@media (max-height:560px) and (min-aspect-ratio:1/1){
+  .screen{padding:12px;gap:10px}
+  #menu.active{
+    display:grid;grid-template-columns:auto auto;align-content:center;justify-content:center;
+    grid-template-areas:"logo panel" "tag panel" "cta panel" "hint panel";
+    column-gap:clamp(16px,4vw,48px);row-gap:10px;
+  }
+  #menu .logo{grid-area:logo;font-size:clamp(24px,5vw,56px);align-self:end}
+  #menu .tagline{grid-area:tag;text-align:center;font-size:10px;letter-spacing:.3em}
+  #menu .cta{grid-area:cta;justify-self:center}
+  #menu .hint{grid-area:hint;font-size:10px;line-height:1.5;max-width:300px;align-self:start}
+  #menu .panel{grid-area:panel;width:min(340px,48vw);align-self:center}
+  .panel{padding:12px;gap:6px}
+  .row{font-size:10px;letter-spacing:.15em}
+  .row.hs span{font-size:15px}
+  .seg button{padding:5px 8px;font-size:9px}
+  .cta{padding:10px 28px;font-size:15px;letter-spacing:.25em}
+  .ghost{padding:7px 16px}
+  .panel.small{gap:8px}
+  .panel.small h2,.glitch{font-size:20px;margin-bottom:0}
+  .stats{grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0}
+  .stats > div{padding:6px}
+  .stats .k{font-size:8px;letter-spacing:.15em}
+  .stats span:last-child{font-size:15px}
+  #over .panel.small{width:min(520px,92vw)}
+  .hud{padding:8px 14px}
+  .hud-cell span:last-child{font-size:16px}
+  .status{bottom:12px}
+  .board{width:min(560px,92vw,calc(100vh - 100px));gap:10px;padding:10px}
+  .board.cols-3{width:min(560px,92vw,calc((100vh - 100px)*1.5))}
+  .countdown span{font-size:96px}
 }
 
 /* Focus states */

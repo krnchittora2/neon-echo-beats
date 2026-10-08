@@ -42,6 +42,7 @@ class AudioManager {
     this.master.connect(this.reverb);
   }
   resume(){ this.ctx && this.ctx.state==='suspended' && this.ctx.resume(); }
+  suspend(){ this.ctx && this.ctx.state==='running' && this.ctx.suspend(); }
   setEnabled(v){ this.enabled=v; if(this.master) this.master.gain.value = v?0.5:0; }
 
   /** Play synth note */
@@ -176,7 +177,8 @@ class NeonEcho {
   }
   savePrefs(){
     const {diff,layout,soundOn,reduced,cb,hi} = this.state;
-    localStorage.setItem('neonEcho', JSON.stringify({diff,layout,soundOn,reduced,cb,hi}));
+    // storage can throw (incognito / blocked site data) — never let that break the game
+    try{ localStorage.setItem('neonEcho', JSON.stringify({diff,layout,soundOn,reduced,cb,hi})); }catch{}
   }
   applyPrefs(){
     document.body.classList.toggle('reduced', this.state.reduced);
@@ -212,19 +214,20 @@ class NeonEcho {
     wire('sound','soundOn', v=>v==='on');
     wire('motion','reduced', v=>v==='on');
     wire('cb','cb', v=>v==='on');
-    $('startBtn').addEventListener('click',()=>{ this.audio.init(); this.audio.resume(); this.start(); });
+    $('startBtn').addEventListener('click',()=>{ this.audio.init(); this.audio.resume(); this.playWithBreak(); });
   }
 
   bindGame(){
     $('pauseBtn').addEventListener('click',()=>this.togglePause());
     $('resumeBtn').addEventListener('click',()=>this.togglePause());
     $('quitBtn').addEventListener('click',()=>this.quitToMenu());
-    $('replayBtn').addEventListener('click',()=>{ this.show('game'); this.start(); });
+    $('replayBtn').addEventListener('click',()=>this.playWithBreak());
     $('menuBtn').addEventListener('click',()=>this.quitToMenu());
   }
 
   bindKeys(){
     addEventListener('keydown', e=>{
+      if(Poki.adActive) return; // no input while an ad is playing
       if(e.key==='Escape'){
         if($('game').classList.contains('active')) this.quitToMenu();
       } else if(e.key===' '||e.code==='Space'){
@@ -247,6 +250,15 @@ class NeonEcho {
   }
 
   /* ---- start game ---- */
+  // Player chose to play (Start / Replay): offer Poki a natural ad slot first, muted, then start
+  playWithBreak(){
+    if(Poki.adActive) return;
+    Poki.commercialBreak(()=>this.audio.suspend()).then(()=>{
+      this.audio.resume();
+      this.start();
+    });
+  }
+
   start(){
     this.clearTimers();
     this.glitch.clear();
@@ -262,6 +274,7 @@ class NeonEcho {
     this.buildBoard();
     this.updateHUD();
     this.show('game');
+    Poki.gameplayStart();
     this.countdown().then(()=>this.nextRound());
   }
 
@@ -444,10 +457,12 @@ class NeonEcho {
     if(!this.state.running) return;
     this.state.paused = !this.state.paused;
     if(this.state.paused){
+      Poki.gameplayStop();
       this.show('pause');
       this.state.accepting = false;
       this.clearWatchdog();
     } else {
+      Poki.gameplayStart();
       this.show('game');
       // resume input only if mid-input
       if(this.state.inputIdx < this.state.seq.length){
@@ -460,6 +475,7 @@ class NeonEcho {
   waitResume(){ return new Promise(r=>this._resumeResolver=r); }
 
   quitToMenu(){
+    Poki.gameplayStop();
     this.state.running=false; this.state.accepting=false; this.state.paused=false;
     this.clearTimers(); this.glitch.clear();
     this.show('menu');
@@ -467,6 +483,7 @@ class NeonEcho {
 
   /* ---- game over ---- */
   gameOver(reason){
+    Poki.gameplayStop();
     this.state.accepting=false; this.state.running=false;
     this.clearWatchdog();
     this.audio.fail();
@@ -493,4 +510,9 @@ class NeonEcho {
 }
 
 /* ---------------- BOOT ---------------- */
-window.addEventListener('DOMContentLoaded', ()=>{ new NeonEcho(); });
+window.addEventListener('DOMContentLoaded', ()=>{
+  Poki.init().then(()=>{
+    new NeonEcho();
+    Poki.gameLoadingFinished();
+  });
+});
